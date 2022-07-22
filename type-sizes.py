@@ -219,7 +219,31 @@ def parse_tree(lines, depth=1) -> tuple[list[str], list[Union[Discriminant, Padd
     return lines, tree
 
 
-def walk_up(dir=None):
+def walk_tree(tree, callback):
+    callback(tree)
+    for subtree in getattr(tree, 'tree', []) or []:
+        walk_tree(subtree, callback)
+
+
+def trim_name(node, max_length):
+    if hasattr(node, 'name') and len(node.name) > max_length:
+        # add ellipsis
+        trimmed = node.name[:max_length] + '…'
+
+        # add missing closing brackets
+        left, right = 0, 0
+        for match in PATTERNS['name_sep'].finditer(trimmed):
+            if match.group() == '<':
+                left += 1
+            elif match.group() == '>':
+                right += 1
+        if right < left:
+            trimmed += '>' * (left - right)
+
+        node.name = trimmed
+
+
+def fs_walk_up(dir=None):
     if dir is None:
         dir = os.getcwd()
     while True:
@@ -254,6 +278,8 @@ def main(args=None):
                         help='Output type')
     parser.add_argument('--output-dir', default='./type-sizes', help='HTML output directory')
     parser.add_argument('--sort-size', action='store_true', help='Sort by size')
+    parser.add_argument('--max-length', type=int, default=120,
+                        help='Limit length of type names (0 to disable)')
     args, tail = parser.parse_known_args()
 
     touch(args.touch)
@@ -264,14 +290,18 @@ def main(args=None):
     log.info('Parsing ...')
     types = parse(proc.stdout.split('\n'))
 
-    log.info('Generating output ...')
+    if args.max_length > 0:
+        for type in types:
+            walk_tree(type, lambda node: trim_name(node, max_length=args.max_length))
 
     package_name = None
-    for dir in walk_up():
+    for dir in fs_walk_up():
         data = parse_cargo_toml(dir)
         if data and 'package' in data and 'name' in data['package']:
             package_name = data['package']['name']
             break
+
+    log.info('Generating output ...')
 
     if args.sort_size:
         types = sorted(types, key=lambda typ: typ.size, reverse=True)
