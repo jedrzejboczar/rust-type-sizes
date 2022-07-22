@@ -62,6 +62,7 @@ class NameParseMixin:
         tokens = []
         i = 0
         brackets_level = 0
+
         for match in PATTERNS['name_sep'].finditer(self.name):
             start, end = match.span()
 
@@ -79,6 +80,10 @@ class NameParseMixin:
                     log.warning('Negative angle brackets_level=%s for name=%s', brackets_level, self.name)
 
             i = end
+
+        if i < len(self.name):
+            tokens.append((self.name[i:], brackets_level))
+
         return tokens
 
 
