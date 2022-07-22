@@ -1,0 +1,73 @@
+body {
+  background: #fdfaf8;
+}
+
+/* Remove default bullets */
+ul {
+  list-style-type: none;
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+/* Style the caret/arrow */
+.caret {
+  cursor: pointer;
+  user-select: none; /* Prevent text selection */
+}
+/* Create the caret/arrow with a unicode, and style it */
+.caret::before {
+  content: "\25B6";
+  color: black;
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 0.8em;
+}
+
+/* Rotate the caret/arrow icon when clicked on (using JavaScript) */
+.caret-down::before {
+  transform: rotate(90deg);
+}
+
+/* Hide the nested list */
+.nested {
+  display: none;
+}
+/* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
+.active {
+  display: block;
+}
+
+/* Colors */
+.type-path {
+    color: #a4541b;
+}
+.number {
+    color: #0e7aa4;
+}
+.subtype {
+    color: #2b1fb9;
+}
+.name {
+    color: #a4541b;
+}
+.colon {
+    color: #ad18e3;
+}
+.bracket {
+    color: #5555aa;
+}
+
+/* Text sizes */
+.side-note {
+  color: #444444;
+  font-size: 0.8rem;
+}
+.regular {
+  font-size: 1.0rem;
+}
+.smaller {
+  font-size: 0.8rem;
+}
+/* Get's rid of spaces between span elements */
+.no-size {
+  font-size: 0;
+}

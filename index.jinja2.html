@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Types</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="styles.css" type="text/css" rel="stylesheet">
+    <script src="index.js" type="text/javascript" defer></script>
+  </head>
+  <body>
+    {% for type in types %}
+    <li>
+
+      {# Add caret if we need to recurse #}
+      {% if type.tree is not none and type.tree|length %}
+        <span class="caret">
+      {% endif %}
+
+      <span class="type-path no-size">
+          {% for (token, lvl) in type.name_split() %}
+            {% if token == '::' %}
+              <span class="colon {% if lvl > 0 %}smaller{% else %}regular{% endif %}">{{ token }}</span>
+            {% elif token in '<>' %}
+              <span class="bracket {% if lvl > 0 %}smaller{% else %}regular{% endif %}">{{ token }}</span>
+            {% else %}
+              <span class="{% if lvl > 0 %}smaller side-note{% else %}regular{% endif %}">{{ token }}</span>
+            {% endif %}
+          {% endfor %}
+      </span>:
+      <span class="number">{{ type.size }}</span> B,
+      <span class="side-note">alignment</span> <span class="number">{{ type.alignment }}</span> B
+
+      {# Recurse into the list #}
+      {% if type.tree is not none and type.tree|length %}
+      </span>
+      <ul class="nested">
+        {% for node in type.tree recursive %}
+        <li>
+          {% if node.tree is not none and node.tree|length %}
+          <span class="caret">
+          {% endif %}
+
+            <span class="subtype">
+              {{ node.__class__.__name__|lower }}
+            </span>
+
+            {% if node.name is defined %}
+              <span class="name">{{ node.name }}</span>:
+            {% endif %}
+
+            {% if node.size is defined %}
+              <span class="number">{{ node.size }}</span> B,
+            {% endif %}
+
+            {% if node.offset is defined %}
+              <span class="side-note">offset</span>
+              <span class="number">{{ node.offset }}</span>{% if node.offset is not none %} B {% endif %},
+            {% endif %}
+
+            {% if node.alignment is defined %}
+              <span class="side-note">alignment</span>
+              <span class="number">{{ node.alignment }}</span>{% if node.offset is not none %} B {% endif %},
+            {% endif %}
+
+          {# Recurse into the list #}
+          {% if node.tree is not none and node.tree|length %}
+          </span>
+          <ul class="nested">
+            {{ loop(node.tree) }}
+          </ul>
+          {% endif %}
+        </li>
+
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+    </li>
+    {% endfor %}
+  </body>
+</html>
