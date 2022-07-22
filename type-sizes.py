@@ -53,7 +53,7 @@ PATTERNS = {
                   name=r'[^`]+', size=r'\d+', align=r'\d+'),
     'inner': regex(r'^{indent}{type}( `{name}`)?: {size} bytes(, offset: {offset} bytes)?(, alignment: {align} bytes)?$',
                    indent=r'\s+', type=r'[a-z ]+', name=r'[^`]+', size=r'\d+', offset=r'\d+', align=r'\d+'),
-    'name_sep': regex(r'::|<|>'),
+    'name_sep': regex(r'::|<|>|->'),
 }
 
 
@@ -76,7 +76,7 @@ class NameParseMixin:
             if match.group() == '>':
                 brackets_level -= 1
                 if brackets_level < 0:
-                    log.warning('Negative angle brackets level: %s', brackets_level)
+                    log.warning('Negative angle brackets_level=%s for name=%s', brackets_level, self.name)
 
             i = end
         return tokens
