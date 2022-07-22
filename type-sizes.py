@@ -3,10 +3,12 @@
 import re
 import os
 import sys
+import toml
 import pprint
 import shutil
 import logging
 import argparse
+import datetime
 import subprocess
 import dataclasses
 from pathlib import Path
@@ -28,7 +30,7 @@ def touch(path):
 def compile(args):
     cmd = ['cargo', '+nightly', 'rustc', *args, '--', '-Zprint-type-sizes']
     proc = subprocess.run(cmd, check=True, capture_output=True, text=True)
-    return proc
+    return proc, cmd
 
 
 def g(name, pattern):
@@ -212,6 +214,24 @@ def parse_tree(lines, depth=1) -> tuple[list[str], list[Union[Discriminant, Padd
     return lines, tree
 
 
+def walk_up(dir=None):
+    if dir is None:
+        dir = os.getcwd()
+    while True:
+        yield dir
+        dir, tail = os.path.split()
+        if not tail:
+            break
+
+
+def parse_cargo_toml(dir):
+    try:
+        with open(os.path.join(dir, 'Cargo.toml')) as f:
+            return toml.load(f)
+    except (FileNotFoundError, toml.TOMLDecodeError):
+        pass
+
+
 def main(args=None):
     description = '''
     Show type sizes in Rust code. Compiles the code using
@@ -234,12 +254,19 @@ def main(args=None):
     touch(args.touch)
 
     log.info('Compiling ...')
-    proc = compile(tail)
+    proc, cmd = compile(tail)
 
     log.info('Parsing ...')
     types = parse(proc.stdout.split('\n'))
 
     log.info('Generating output ...')
+
+    package_name = None
+    for dir in walk_up():
+        data = parse_cargo_toml(dir)
+        if data and 'package' in data and 'name' in data['package']:
+            package_name = data['package']['name']
+            break
 
     if args.sort_size:
         types = sorted(types, key=lambda typ: typ.size, reverse=True)
@@ -266,6 +293,9 @@ def main(args=None):
         template = env.get_template(input_template)
         template.stream(
             types=types,
+            package_name=package_name or '_unknown_',
+            command=' '.join(cmd),
+            datetime=datetime.datetime.now(),
         ).dump(os.path.join(args.output_dir, output))
 
         for file in input_static:

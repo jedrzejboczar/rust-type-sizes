@@ -71,3 +71,14 @@ ul {
 .no-size {
   font-size: 0;
 }
+
+.info {
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+.bold {
+  font-weight: bold;
+}
+.cmd {
+  display: inline;
+}

@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Types</title>
+    <title>Rust type sizes</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="styles.css" type="text/css" rel="stylesheet">
     <script src="index.js" type="text/javascript" defer></script>
   </head>
   <body>
+    <div class="info">
+      <div><span class="bold">Time:</span> {{ datetime }}</div>
+      <div><span class="bold">Package:</span> {{ package_name }}</div>
+      <div><span class="bold">Command:</span> <pre class="cmd">{{ command }}</pre></div>
+    </div>
+
     {% for type in types %}
     <li>
 
