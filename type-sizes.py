@@ -280,6 +280,10 @@ def main(args=None):
     parser.add_argument('--sort-size', action='store_true', help='Sort by size')
     parser.add_argument('--max-length', type=int, default=120,
                         help='Limit length of type names (0 to disable)')
+    parser.add_argument('--include', action='append', help='Include only types matching regex')
+    parser.add_argument('--exclude', action='append', help='Exclude types that match regex')
+    parser.add_argument('--exclude-std', action='append_const', dest='exclude',
+                        const='^(std|core)::', help='Exclude types from std:: and core::')
     args, tail = parser.parse_known_args()
 
     touch(args.touch)
@@ -289,6 +293,19 @@ def main(args=None):
 
     log.info('Parsing ...')
     types = parse(proc.stdout.split('\n'))
+
+    # Filter types by name
+    filters = []
+    for regex in args.include or []:
+        pattern = re.compile(regex)
+        # Avoid Python using "pattern" variable by name instead of the one in this scope
+        filters.append(lambda type, pattern=pattern: pattern.search(type.name))
+    for regex in args.exclude or []:
+        pattern = re.compile(regex)
+        filters.append(lambda type, pattern=pattern: not pattern.search(type.name))
+    for f in filters:
+        types = filter(f, types)
+    types = list(types)
 
     if args.max_length > 0:
         for type in types:
