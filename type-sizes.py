@@ -29,7 +29,7 @@ def touch(path):
 
 def compile(args):
     cmd = ['cargo', '+nightly', 'rustc', *args, '--', '-Zprint-type-sizes']
-    proc = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    proc = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, text=True)
     return proc, cmd
 
 
